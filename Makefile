@@ -1,7 +1,7 @@
 TEXFILE ?= plone-and-volto-in-jamstack-project
 
 .PHONY: all
-all: $(TEXFILE).pdf build
+all: build
 
 $(TEXFILE).nav: $(TEXFILE).tex
 	@latexmk -shell-escape -quiet $(TEXFILE)
@@ -9,10 +9,11 @@ $(TEXFILE).nav: $(TEXFILE).tex
 $(TEXFILE).pdf: $(TEXFILE).tex images
 	@latexmk -pdf -recorder -interaction=nonstopmode -shell-escape -use-make -quiet $(TEXFILE)
 
-build: plone-and-volto-in-jamstack-project.pdf
-	mkdir -p build
+build: plone-and-volto-in-jamstack-project.pdf deploying-plone-and-volto-hard-way.pdf
+	mkdir -p build/alt
 	mv *.pdf build
 	echo '<meta http-equiv="refresh" content= "0;url=plone-and-volto-in-jamstack-project.pdf" />' > build/index.html
+	echo '<meta http-equiv="refresh" content= "0;url=../deploying-plone-and-volto-hard-way.pdf" />' > build/alt/index.html
 	touch build/.nojekyll
 
 .PHONY: watch
