@@ -3,11 +3,14 @@ TEXFILE ?= plone-and-volto-in-jamstack-project
 .PHONY: all
 all: build
 
-$(TEXFILE).nav: $(TEXFILE).tex
-	@latexmk -shell-escape -quiet $(TEXFILE)
+%.nav: %.tex
+	@latexmk -shell-escape -quiet $<
 
-$(TEXFILE).pdf: $(TEXFILE).tex images
-	@latexmk -pdf -recorder -interaction=nonstopmode -shell-escape -use-make -quiet $(TEXFILE)
+%.pdf: %.tex images
+	@latexmk -pdf -recorder -interaction=nonstopmode -shell-escape -use-make -quiet $<
+
+%.pdf: %.tex images
+	@latexmk -pdf -recorder -interaction=nonstopmode -shell-escape -use-make -quiet $<
 
 build: plone-and-volto-in-jamstack-project.pdf deploying-plone-and-volto-hard-way.pdf
 	mkdir -p build/alt
