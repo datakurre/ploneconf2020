@@ -368,8 +368,8 @@ pkgs.stdenv.mkDerivation {
 %---------------------------------------------------------------------------------------
 
 \setmytemplate
-\begin{frame}{Plone 5.2.1 without buildout}
-  \textbf{Our legacy approach for Plone with pip}
+\begin{frame}{Plone 5.2.1 without Buildout}
+  \textbf{Our (legacy) approach for Plone with pip}
   \begin{itemize}
     \item generated requirements.txt with buildout
     \item created Python environment with pip / Nix
@@ -467,7 +467,7 @@ pkgs.stdenv.mkDerivation {
 \end{frame}
 
 \setmytemplate
-\begin{frame}[fragile]{Plone 6 without buildout}
+\begin{frame}[fragile]{Plone 6 without Buildout}
   \begin{itemize}
     \item[\color{green}{\faCheck}] Plone 6 is pip installable (hearsay)
   \end{itemize}
@@ -485,8 +485,8 @@ $ ./py/bin/runwsgi -v etc/zope.ini
 %---------------------------------------------------------------------------------------
 
 \setmytemplate
-\begin{frame}[fragile]{TxZServer in production}
-  \textbf{Plone 5.2.1 / Zope 4.1.3 / Twisted / WebSockets / ZMQ}
+\begin{frame}[fragile]{TxZServer in Production}
+  \textbf{Plone 5.2.1 / Zope 4.1.3 / Twisted / WebSockets + ZMQ PubSub}
   \footnotesize
   \begin{minted}{cfg}
 [sources]
@@ -498,7 +498,7 @@ plonectl = git git@github.com:datakurre/plonectl
   \end{minted}
   \begin{itemize}
     \item[\color{green}{\faCheck}] in production since March 2020 without known issues
-    \item[\color{red}{\faTimes}] upgrade to Plone $>$ 5.2.1 still pending
+    \item[\color{red}{\faTimes}] upgrade to Plone $>$ 5.2.1 and Zope $>$ 4.1 still pending
   \end{itemize}
 \end{frame}
 
