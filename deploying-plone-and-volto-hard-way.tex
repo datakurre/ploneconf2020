@@ -8,7 +8,6 @@
 
 % Beamer
 \usetheme{metropolis}
-\usepackage{multicol}
 \usepackage[sfdefault]{FiraSans}
 \usepackage{xcolor}
 \definecolor{blue}{HTML}{002957}
@@ -41,6 +40,8 @@
 \usepackage{hyperref}
 \usepackage{minted}
 \usepackage{fontawesome}
+\usepackage{multicol}
+\usepackage[normalem]{ulem}
 
 % Title
 \title{Deploying Plone and Volto – the Hard Way}
@@ -139,7 +140,7 @@
 \begin{frame}{}
 \Wider{
 \begin{multicols}{2}
-\includegraphics[height=1\paperheight]{images/nomad-01.png}
+\includegraphics[height=1\paperheight]{images/nomad-02.png}
 \columnbreak
 ~\par
 ~\par
@@ -221,6 +222,7 @@ artifact {
   Advantages
   \begin{itemize}
     \item 100~\% reproducible
+    \item production equals development
     \item sandboxed offline builds
     \item full dependency graph
     \item standalone tarballs
@@ -231,13 +233,14 @@ artifact {
   \columnbreak
   Disadvantages
   \begin{itemize}
-    \item no conventions
-    \item no metadata
-    \item no shared layers
-    \item no documentation
-    \item[]
-    \item[]
-    \item[]
+    \item<1-> no conventions
+    \item<1-> no metadata
+    \item<1-> no shared layers
+    \only<1>{\item<1-> no documentation}
+    \only<2>{\item<1-> \sout{no documentation}}
+    \item<2->[] \hspace{-2.2em} Some documentation
+    \item<2-> https://nixos.org
+    \item<2-> https://nix.dev
   \end{itemize}
 \end{multicols}
 \end{frame}

@@ -47,6 +47,7 @@ stdenv.mkDerivation rec {
         pgfplots
         preview
         translator
+        ulem
         upquote
         xcolor
         xkeyval
