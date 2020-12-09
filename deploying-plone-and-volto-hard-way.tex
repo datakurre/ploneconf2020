@@ -252,7 +252,7 @@ artifact {
 \begin{minted}{nix}
 { pkgs ? import ../nix { nixpkgs = sources."nixpkgs-20.09"; }
 , sources ? import ../nix/sources.nix
-, build ? import ./default.nix { inherit pkgs; }
+, volto ? import ./default.nix { inherit pkgs; }
 , name ? "artifact"
 }:
 
@@ -281,7 +281,7 @@ runCommand name {
 mkdir -p local/bin
 makeWrapper ${bashInteractive}/bin/sh local/bin/sh \
   --prefix PATH : ${coreutils}/bin \
-  --prefix PATH : ${build}/bin \
+  --prefix PATH : ${volto}/bin \
   --prefix PATH : ${findutils}/bin \
   --prefix PATH : ${gnused}/bin \
   --prefix PATH : ${env}/bin
