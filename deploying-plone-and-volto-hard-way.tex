@@ -324,7 +324,7 @@ pkgs.stdenv.mkDerivation {
   installPhase = ''
     source $stdenv/setup;
     cat > $out/bin/volto << EOF
-#$bash/bin/env sh
+#!$bash/bin/env sh
 RUNTIME="\$(mktemp -d)"
 cp -R $out/lib/volto/build/* "\$RUNTIME"
 chmod u+w -R "\$RUNTIME"
