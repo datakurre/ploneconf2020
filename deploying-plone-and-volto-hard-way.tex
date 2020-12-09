@@ -115,7 +115,6 @@
     \item[\color{red}{\faTimes}] WSGI
     \item[\color{red}{\faTimes}] Docker
     \item[\color{red}{\faTimes}] Registry
-    \item[]
   \end{itemize}
   \columnbreak
   \textbf{}
@@ -124,7 +123,6 @@
     \item[\color{green}{\faCheck}] Nix
     \item[\color{green}{\faCheck}] TxZServer
     \item[\color{green}{\faCheck}] Nomad
-    \item[\color{green}{\faCheck}] Levant
   \end{itemize}
   \end{multicols}
 \end{frame}
@@ -407,7 +405,7 @@ let configuration = generators.toZConfig {
       zeoclient = {
         read-only = false;
         read-only-fallback = false;
-        blob-dir = "${var}/blostorage";
+        blob-dir = "${var}/blobstorage";
         shared-blob-dir = true;
         server = "$(PLONE_ZEOSERVER_ADDRESS)";
         storage = 1;
@@ -443,26 +441,26 @@ pkgs.stdenv.mkDerivation {
 %---------------------------------------------------------------------------------------
 
 \setnixtemplate
-\begin{frame}[fragile]{\texttt{/bin/zeoinstance}}
+\begin{frame}[fragile]{\texttt{/bin/plonectl-zeoinstance}}
 \tiny
 \begin{minted}{nix}
-  zeoinstance = stdenv.mkDerivation {
-    name = "plone-zeoinstance";
+  plonectl-zeoinstance = stdenv.mkDerivation {
+    name = "plonectl-zeoinstance";
     zope_conf = import ./zconfig/zeoinstance.nix {};
     plonesite_py = ./zconfig/plonesite.py;
     builder = builtins.toFile "builder.sh" ''
       source $stdenv/setup
       mkdir -p $out/bin
-      cat > $out/bin/zeoinstance << EOF
+      cat > $out/bin/plonectl-zeoinstance << EOF
       #!$bash/bin/sh
       mkdir -p \$PLONE_VAR/filestorage
       if [ ! -f \$PLONE_VAR/.sentinel ]; then
           $env/bin/python -m plonectl.cli instance -C $zope_conf run $plonesite_py
           touch \$PLONE_VAR/.sentinel
       fi
-      $env/bin/python -m plonectl.cli instance -C $zope_conf console
+      $env/bin/python -m plonectl.cli instance -C $zope_conf \@$
       EOF
-      chmod a+x $out/bin/zeoinstance
+      chmod a+x $out/bin/plonectl-zeoinstance
     '';
     inherit bash env;
   };
