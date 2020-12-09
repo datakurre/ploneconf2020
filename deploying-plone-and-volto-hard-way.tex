@@ -281,16 +281,15 @@ runCommand name {
 mkdir -p local/bin
 makeWrapper ${bashInteractive}/bin/sh local/bin/sh \
   --prefix PATH : ${coreutils}/bin \
-  --prefix PATH : ${volto}/bin \
   --prefix PATH : ${findutils}/bin \
   --prefix PATH : ${gnused}/bin \
-  --prefix PATH : ${env}/bin
+  --prefix PATH : ${volto}/bin
 tar cvzhP \
   --hard-dereference \
+  --files-from=${closure} \
   --exclude="${env}" \
   --exclude="*ncurses*/ncurses*/ncurses*" \
   --exclude="/nix/store/*-node_volto-starter-git*" \
-  --files-from=${closure} \
   --transform="s|^local/||" \
   local > $out || true
 ''
@@ -309,38 +308,42 @@ tar cvzhP \
 pkgs.stdenv.mkDerivation {
   name = "volto";
   src = pkgs.lib.cleanSource ./.;
-  builder = builtins.toFile "builder.sh" ''
+  unpackPhase = "";
+  buildPhase = ''
     source $stdenv/setup;
     mkdir -p $out/bin $out/lib
     cp -a $src $out/lib/volto && chmod u+w -R $out/lib/volto
     cd $out/lib/volto
-    cp -a $env node_modules
+    cp -a $node_modules node_modules
     HOST=CUSTOM_RAZZLE_SERVER_HOST \
     PORT=CUSTOM_RAZZLE_SERVER_PORT \
     RAZZLE_API_PATH=CUSTOM_RAZZLE_API_PATH \
     node_modules/.bin/razzle build
     chmod u+w -R node_modules && rm -r node_modules
+  '';
+  installPhase = ''
+    source $stdenv/setup;
     cat > $out/bin/volto << EOF
-    #$bash/bin/env sh
-    RUNTIME="\$(mktemp -d)"
-    cp -R $out/lib/volto/build/* "\$RUNTIME"
-    chmod u+w -R "\$RUNTIME"
-    find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_SERVER_HOST|\$HOST|g"
-    find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_SERVER_PORT|\$PORT|g"
-    find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_API_PATH|\$RAZZLE_API_PATH|g"
-    find "\$RUNTIME" -name "*.js"|xargs sed -i "s|$out/lib/volto/build|\$RUNTIME|g"
-    chmod u-w -R "\$RUNTIME"
-    cd $out/lib/volto && node "\$RUNTIME/server.js" $@
-    EOF
+#$bash/bin/env sh
+RUNTIME="\$(mktemp -d)"
+cp -R $out/lib/volto/build/* "\$RUNTIME"
+chmod u+w -R "\$RUNTIME"
+find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_SERVER_HOST|\$HOST|g"
+find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_SERVER_PORT|\$PORT|g"
+find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_API_PATH|\$RAZZLE_API_PATH|g"
+find "\$RUNTIME" -name "*.js"|xargs sed -i "s|$out/lib/volto/build|\$RUNTIME|g"
+chmod u-w -R "\$RUNTIME"
+cd $out/lib/volto && node "\$RUNTIME/server.js" \$@
+EOF
     chmod u+x $out/bin/volto
     wrapProgram $out/bin/volto \
-      --suffix PATH : $propagatedBuildInputs/bin \
+      --suffix PATH : $node/bin \
       --suffix NODE_ENV : production \
-      --suffix NODE_PATH : $env
+      --suffix NODE_PATH : $node_modules
   '';
   buildInputs = with pkgs; [ makeWrapper ];
-  propagatedBuildInputs = with pkgs; [ nodejs-14_x ];
-  inherit bash env;
+  node = pkgs.nodejs-14_x;
+  inherit bash node_modules;
 }
 \end{minted}
 \end{multicols}
