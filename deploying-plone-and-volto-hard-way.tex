@@ -315,7 +315,8 @@ pkgs.stdenv.mkDerivation {
     cp -a $src $out/lib/volto && chmod u+w -R $out/lib/volto
     cd $out/lib/volto
     cp -a $env node_modules
-    HOST=CUSTOM_RAZZLE_SERVER_HOST PORT=CUSTOM_RAZZLE_SERVER_PORT \
+    HOST=CUSTOM_RAZZLE_SERVER_HOST \
+    PORT=CUSTOM_RAZZLE_SERVER_PORT \
     RAZZLE_API_PATH=CUSTOM_RAZZLE_API_PATH \
     node_modules/.bin/razzle build
     chmod u+w -R node_modules && rm -r node_modules
