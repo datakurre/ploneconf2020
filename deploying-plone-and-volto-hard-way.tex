@@ -265,8 +265,6 @@ let
     paths = [
       bashInteractive
       coreutils
-      findutils
-      gnused
       volto
     ];
   };
@@ -281,19 +279,16 @@ runCommand name {
 mkdir -p local/bin
 makeWrapper ${bashInteractive}/bin/sh local/bin/sh \
   --prefix PATH : ${coreutils}/bin \
-  --prefix PATH : ${findutils}/bin \
-  --prefix PATH : ${gnused}/bin \
   --prefix PATH : ${volto}/bin
-tar cvzhP \
+tar czvhP \
   --hard-dereference \
-  --files-from=${closure} \
   --exclude="${env}" \
   --exclude="*ncurses*/ncurses*/ncurses*" \
-  --exclude="/nix/store/*-node_volto-starter-git*" \
+  --exclude="/nix/store/*-node_my-volto-project-git*" \
+  --files-from=${closure} \
   --transform="s|^local/||" \
   local > $out || true
 ''
-
 \end{minted}
 \end{multicols}
 \end{frame}
@@ -305,16 +300,15 @@ tar cvzhP \
 \tiny
 \begin{multicols}{2}
 \begin{minted}{nix}
-pkgs.stdenv.mkDerivation {
+pkgs.stdenv.mkDerivation rec {
   name = "volto";
   src = pkgs.lib.cleanSource ./.;
-  unpackPhase = "";
   buildPhase = ''
     source $stdenv/setup;
     mkdir -p $out/bin $out/lib
     cp -a $src $out/lib/volto && chmod u+w -R $out/lib/volto
     cd $out/lib/volto
-    cp -a $node_modules node_modules
+    cp -a ${node_modules} node_modules
     HOST=CUSTOM_RAZZLE_SERVER_HOST \
     PORT=CUSTOM_RAZZLE_SERVER_PORT \
     RAZZLE_API_PATH=CUSTOM_RAZZLE_API_PATH \
@@ -324,26 +318,29 @@ pkgs.stdenv.mkDerivation {
   installPhase = ''
     source $stdenv/setup;
     cat > $out/bin/volto << EOF
-#!$bash/bin/env sh
-RUNTIME="\$(mktemp -d)"
-cp -R $out/lib/volto/build/* "\$RUNTIME"
-chmod u+w -R "\$RUNTIME"
-find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_SERVER_HOST|\$HOST|g"
-find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_SERVER_PORT|\$PORT|g"
-find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_API_PATH|\$RAZZLE_API_PATH|g"
-find "\$RUNTIME" -name "*.js"|xargs sed -i "s|$out/lib/volto/build|\$RUNTIME|g"
-chmod u-w -R "\$RUNTIME"
-cd $out/lib/volto && node "\$RUNTIME/server.js" \$@
-EOF
+    #!/usr/bin/env sh
+    RUNTIME="\$(mktemp -d)"
+    cp -R $out/lib/volto/build/* "\$RUNTIME"
+    chmod u+w -R "\$RUNTIME"
+    find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_SERVER_HOST|\$HOST|g"
+    find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_SERVER_PORT|\$PORT|g"
+    find "\$RUNTIME" -name "*.js"|xargs sed -i "s|CUSTOM_RAZZLE_API_PATH|\$RAZZLE_API_PATH|g"
+    find "\$RUNTIME" -name "*.js"|xargs sed -i "s|$out/lib/volto/build|\$RUNTIME|g"
+    chmod u-w -R "\$RUNTIME"
+    cd $out/lib/volto && node "\$RUNTIME/server.js" \$@
+    EOF
     chmod u+x $out/bin/volto
-    wrapProgram $out/bin/volto \
-      --suffix PATH : $node/bin \
-      --suffix NODE_ENV : production \
-      --suffix NODE_PATH : $node_modules
   '';
-  buildInputs = with pkgs; [ makeWrapper ];
-  node = pkgs.nodejs-14_x;
-  inherit bash node_modules;
+  postFixup = ''
+    wrapProgram $out/bin/volto \
+      --prefix PATH : ${pkgs.lib.makeBinPath propagatedBuildInputs} \
+      --suffix NODE_ENV : production \
+      --suffix NODE_PATH : ${node_modules}
+  '';
+  buildInputs = with pkgs; [ makeWrapper bindfs ];
+  propagatedBuildInputs = with pkgs; [
+    coreutils findutils gnused nodejs-14_x node_modules
+  ];
 }
 \end{minted}
 \end{multicols}
@@ -450,23 +447,24 @@ pkgs.stdenv.mkDerivation {
 \begin{minted}{nix}
   plonectl-zeoinstance = stdenv.mkDerivation {
     name = "plonectl-zeoinstance";
+    phases = [ "installPhase" "fixupPhase" ];
     zope_conf = import ./zconfig/zeoinstance.nix {};
     plonesite_py = ./zconfig/plonesite.py;
-    builder = builtins.toFile "builder.sh" ''
+    installPhase = ''
       source $stdenv/setup
       mkdir -p $out/bin
       cat > $out/bin/plonectl-zeoinstance << EOF
-      #!$bash/bin/sh
+      #!/usr/bin/env sh
       mkdir -p \$PLONE_VAR/filestorage
       if [ ! -f \$PLONE_VAR/.sentinel ]; then
           $env/bin/python -m plonectl.cli instance -C $zope_conf run $plonesite_py
           touch \$PLONE_VAR/.sentinel
       fi
-      $env/bin/python -m plonectl.cli instance -C $zope_conf \@$
+      ${plonePython}/bin/python -m plonectl.cli instance -C $zope_conf \$@
       EOF
       chmod a+x $out/bin/plonectl-zeoinstance
     '';
-    inherit bash env;
+    buildInputs = [ plonePython ];
   };
 \end{minted}
 \end{frame}
